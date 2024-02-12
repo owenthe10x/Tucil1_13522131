@@ -4,8 +4,6 @@ import TextField from '@mui/material/TextField'
 import {createTheme, Divider, ThemeProvider} from '@mui/material'
 import Button from '@mui/material/Button'
 import findSolution from '../lib/algorithm'
-import Autocomplete from '@mui/material/Autocomplete'
-import {bufferOptions} from '../lib/constants'
 import {processInput} from '../lib/processors'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import {styled} from '@mui/material/styles'
@@ -33,7 +31,6 @@ const nullGenerateSettings = {
 	totalSequence: 0,
 	sequenceMax: 0,
 }
-const nullResult = {totalReward: 0, buffer: 0, coordinate: [], time: 0}
 const VisuallyHiddenInput = styled('input')({
 	clip: 'rect(0 0 0 0)',
 	clipPath: 'inset(50%)',
@@ -46,7 +43,7 @@ const VisuallyHiddenInput = styled('input')({
 	width: 1,
 })
 const Form = ({onResultFound}) => {
-	const [settings, setSettings] = useState(dummySettings)
+	const [settings, setSettings] = useState(nullSettings)
 	const [generateSettings, setGenerateSettings] = useState(nullGenerateSettings)
 	const submitHandler = async (e) => {
 		e.preventDefault()
@@ -65,7 +62,6 @@ const Form = ({onResultFound}) => {
 		const end = new Date().getTime()
 		result = {...result, time: end - start}
 		onResultFound(result, settings.matrix)
-		console.log('result', result)
 	}
 	const theme = createTheme({
 		palette: {
@@ -102,9 +98,7 @@ const Form = ({onResultFound}) => {
 		reader.onload = async (e) => {
 			const text = e.target.result
 			const fileSettings = processFile(text)
-			console.log('setting asu bang', settings)
 			setSettings(fileSettings)
-			console.log(text)
 		}
 		reader.readAsText(e.target.files[0])
 		document.getElementById('manualinput').scrollIntoView({behavior: 'smooth'})
@@ -113,7 +107,6 @@ const Form = ({onResultFound}) => {
 	const generateHandler = (e) => {
 		e.preventDefault()
 		const settings = generateInput(generateSettings)
-		console.log('settings asu', settings)
 		setSettings(settings)
 		document.getElementById('manualinput').scrollIntoView({behavior: 'smooth'})
 	}
@@ -299,6 +292,7 @@ const Form = ({onResultFound}) => {
 										onChange={(event) => {
 											onSequenceChange(index, event)
 										}}
+										placeholder="BD E9 1C 7A 55"
 									/>
 									<TextField
 										id="outlined-basic"

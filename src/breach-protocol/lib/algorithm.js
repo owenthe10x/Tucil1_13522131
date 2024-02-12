@@ -1,7 +1,7 @@
-import optimizeSequences from './processors'
+import findSequencess from './processors'
 import {constructSolutionText} from './utilities'
 
-export function BFS(roots, visitor, beforeVisit) {
+export function BFS(roots) {
 	const seenNodes = []
 	let queue = [...roots.map((n) => ({...n, depth: 1}))]
 	while (queue.length > 0) {
@@ -39,7 +39,7 @@ export default function findSolution(
 	rawSequence
 ) {
 	// optimizesquence mengembalikan semua kombinasi sequence yang mungkin menjadi solusi akhir
-	const roots = optimizeSequences(sequences)
+	const roots = findSequencess(sequences)
 	const rootsValues = BFS(roots).map((node) => node.value)
 
 	// ini menambah sequence secara individu karna optimizer hanya return kombinasinya saja
@@ -84,7 +84,6 @@ function calculateTotalReward(route, rawSequence, rawMatrix) {
 		if (solutionText.includes(sequenceText)) {
 			totalReward += sequenceReward
 		}
-		console.log('Total Reward: ', totalReward)
 	}
 	return totalReward
 }
@@ -97,7 +96,7 @@ export const findSolutions = (pattern, matrix, findAll) => {
 	const queue = [
 		{
 			patternPtr: 0,
-			used: make2dArray(yLen, xLen, false),
+			used: constructArray(yLen, xLen, false),
 			stepsSoFar: [],
 			x: 0,
 			y: 0,
@@ -169,16 +168,16 @@ function* walkAllowedDir(searchPoint, yLen, xLen) {
 }
 
 function markUsed(arr, x, y) {
-	const copy = clone2d(arr)
+	const copy = cloneArray(arr)
 	copy[y][x] = true
 	return copy
 }
 
-function clone2d(arr) {
+function cloneArray(arr) {
 	return arr.map((subarr) => subarr.slice())
 }
 
-function make2dArray(yLen, xLen, fillValue) {
+function constructArray(yLen, xLen, fillValue) {
 	const arr = new Array(yLen)
 	for (let y = 0; y < yLen; y++) {
 		arr[y] = new Array(xLen).fill(fillValue)

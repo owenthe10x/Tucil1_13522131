@@ -15,6 +15,7 @@ export const processInput = (matrix, sequence) => {
 	]
 }
 
+
 export const processFile = (text) => {
 	const lines = text
 		.trim()
@@ -31,47 +32,52 @@ export const processFile = (text) => {
 		}
 	}
 	const x = Number(lines[m + 2]) * 2
-	console.log('anjg', m, x, 'harusnya', lines)
 	for (let j = m + 3; j < x + m + 3; j = j + 2) {
 		sequence.push({token: lines[j], reward: Number(lines[j + 1])})
 	}
-	console.log('asu', matrix, sequence)
 	return {buffer, matrix, sequence}
 }
-export const processOutput = (matrix) => {
-	return matrix.split('\n').map((row) => row.trim().split(' '))
-}
 
-export default function optimizeSequence(candidates) {
-	let rootNodes = []
-	for (let c = 0; c < candidates.length; c++) {
-		const candidate = candidates[c]
-		const targets = candidates.filter((_, index) => index !== c)
-		for (let i = 0; i < targets.length; i++) {
-			const target = targets[i]
-			const remain = targets.filter((_, index) => index !== i)
-			const initialSplits = constructSequence(candidate, target, [candidate, target])
-			rootNodes = rootNodes.concat(
-				initialSplits.map((split) => minimatch(split, remain))
-			)
-		}
-	}
-	return rootNodes
-}
-
-function minimatch(split, remain) {
+function matchSequence(split, remain) {
 	const children = remain.flatMap((remainder, remainIndex) => {
 		const childSplits = constructSequence(remainder, split.result, [
 			remainder,
 			...split.includes,
 		])
 		const childRemains = remain.filter((_, i) => i !== remainIndex)
-		return childSplits.map((childSplit) => minimatch(childSplit, childRemains))
+		return childSplits.map((childSplit) =>
+			matchSequence(childSplit, childRemains)
+		)
 	})
 	return {
 		children,
 		value: split,
 	}
+}
+
+
+export const processOutput = (matrix) => {
+	return matrix.split('\n').map((row) => row.trim().split(' '))
+}
+
+export default function findSequences(candidates) {
+	let rootNodes = []
+	for (let i = 0; i < candidates.length; i++) {
+		const candidate = candidates[i]
+		const targets = candidates.filter((_, index) => index !== i)
+		for (let j = 0; j < targets.length; j++) {
+			const target = targets[j]
+			const remain = targets.filter((_, index) => index !== j)
+			const initialSplits = constructSequence(candidate, target, [
+				candidate,
+				target,
+			])
+			rootNodes = rootNodes.concat(
+				initialSplits.map((split) => matchSequence(split, remain))
+			)
+		}
+	}
+	return rootNodes
 }
 
 function checkMatchR(offset, a, b) {
@@ -141,5 +147,3 @@ function applyShift(shiftee, target, shift, includes) {
 		includes,
 	}
 }
-
-

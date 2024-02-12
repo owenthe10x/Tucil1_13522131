@@ -16,7 +16,6 @@ const ClientPage = () => {
 		setResult(result)
 		setMatrix(processedMatrix)
 		setResultModal(true)
-		console.log('result', result)
 	}
 	const closeResult = () => {
 		document.body.style.overflow = 'unset'

@@ -1,5 +1,4 @@
 export const resultToTxt = (result, matrix) => {
-	console.log('result', result)
 	const {solution, time} = result
 	let resultText = ''
 	resultText = resultText.concat(solution[0].totalReward)
@@ -14,7 +13,6 @@ export const resultToTxt = (result, matrix) => {
 	resultText = resultText.concat('\n\n')
 	resultText = resultText.concat(time)
 	resultText = resultText.concat('ms\n')
-	console.log('resultText', resultText)
 	return resultText
 }
 
@@ -52,7 +50,5 @@ export const generateInput = ({
 		const reward = Math.floor(Math.random() * 100)
 		sequence.push({token: sequenceArray.join(' '), reward})
 	}
-	console.log('matrix', matrixString)
-	console.log('sequence', sequence)
 	return {matrix: matrixString, sequence, buffer}
 }
