@@ -1,13 +1,17 @@
 'use client'
 import {useState} from 'react'
-import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
-import {createTheme, ThemeProvider} from '@mui/material'
+import {createTheme, Divider, ThemeProvider} from '@mui/material'
 import Button from '@mui/material/Button'
-import {bruteForce, bufferOptions} from './algorithm'
+import runSolver, {brute} from '../lib/algorithm'
 import Autocomplete from '@mui/material/Autocomplete'
+import {bufferOptions} from '../lib/constants'
+import {processInput} from '../lib/processors'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import {styled} from '@mui/material/styles'
+import {processFile} from '../lib/processors'
 const nullSettings = {
-	matrix: [],
+	matrix: '',
 	sequence: [{token: '', reward: 0}],
 	buffer: 0,
 }
@@ -21,19 +25,45 @@ const dummySettings = {
 	],
 	buffer: 7,
 }
+const nullGenerateSettings = {
+	buffer: 0,
+	matrixSizer: {row: 0, column: 0},
+	token: '',
+	sequenceMax: 0,
+}
 const nullResult = {totalReward: 0, buffer: 0, coordinate: [], time: 0}
-
-const Form = () => {
+const VisuallyHiddenInput = styled('input')({
+	clip: 'rect(0 0 0 0)',
+	clipPath: 'inset(50%)',
+	height: 1,
+	overflow: 'hidden',
+	position: 'absolute',
+	bottom: 0,
+	left: 0,
+	whiteSpace: 'nowrap',
+	width: 1,
+})
+const Form = ({onResultFound}) => {
 	const [settings, setSettings] = useState(dummySettings)
-	const [result, setResult] = useState()
+	const [generateSettings, setGenerateSettings] = useState(nullGenerateSettings)
 	const submitHandler = async (e) => {
 		e.preventDefault()
-		const result = await bruteForce(
+		const sequenceToken = settings.sequence.map((s) => s.token).join('\n')
+		const [processedMatrix, processedSequence] = processInput(
 			settings.matrix,
-			settings.sequence,
-			settings.buffer
+			sequenceToken
 		)
-		console.log(result)
+		const start = new Date().getTime()
+		let result = runSolver(
+			processedMatrix,
+			processedSequence,
+			settings.buffer,
+			settings.sequence
+		)
+		const end = new Date().getTime()
+		result = {...result, time: end - start}
+		onResultFound(result, settings.matrix)
+		console.log('result', result)
 	}
 	const theme = createTheme({
 		palette: {
@@ -47,15 +77,6 @@ const Form = () => {
 		},
 	})
 
-	const onMatrixChange = (e) => {
-		const matrix = e.target.value.split('\n')
-		const newMatrix = matrix.map((m) => {
-			return m.split(' ')
-		})
-		setSettings({...settings, matrix: newMatrix})
-		console.log(settings)
-	}
-
 	const onAddSequence = () => {
 		const newSequence = settings.sequence
 		newSequence.push({token: '', reward: 0})
@@ -64,19 +85,147 @@ const Form = () => {
 
 	const onSequenceChange = (index, e) => {
 		let data = [...settings.sequence]
-		data[index][e.target.name] = e.target.value
+		if (e.target.name === 'reward') {
+			data[index]['reward'] = Number(e.target.value)
+		} else {
+			data[index]['token'] = e.target.value
+		}
+
 		setSettings({...settings, sequence: data})
+	}
+
+	const onFileChange = async (e) => {
+		e.preventDefault()
+		const reader = new FileReader()
+		reader.onload = async (e) => {
+			const text = e.target.result
+			const fileSettings = processFile(text)
+			console.log('setting asu bang', settings)
+			setSettings(fileSettings)
+			console.log(text)
+		}
+		reader.readAsText(e.target.files[0])
+	}
+
+	const generateHandler = (e) => {
+		e.preventDefault()
+		
 	}
 	return (
 		<ThemeProvider theme={theme}>
 			<form onSubmit={submitHandler}>
+				<div className="px-20 ">
+					<h3 className="text-xl mb-5">File Input</h3>
+					<Button
+						color="ochre"
+						component="label"
+						variant="contained"
+						startIcon={<CloudUploadIcon />}
+						href="#manualinput"
+					>
+						Upload file
+						<VisuallyHiddenInput
+							type="file"
+							onChange={(e) => onFileChange(e)}
+						/>
+					</Button>
+				</div>
+				<Divider
+					textAlign="left"
+					sx={{marginY: 5, width: '90%', marginX: 'auto'}}
+				>
+					OR
+				</Divider>
+				<form className="px-20" onSubmit={generateHandler}>
+					<h3 className="manualinput text-xl ">Generated Input</h3>
+					<section className="grid grid-cols-7 gap-5 py-5">
+						<TextField
+							id="outlined-multiline-flexible"
+							label="Token"
+							value={settings.matrix}
+							maxRows={10}
+							color="ochre"
+							focused
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
+						/>
+						<TextField
+							id="outlined-multiline-flexible"
+							label="Buffer size"
+							value={settings.matrix}
+							maxRows={10}
+							color="ochre"
+							focused
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
+						/>
+						<TextField
+							id="outlined-multiline-flexible"
+							label="Row"
+							value={settings.matrix}
+							maxRows={10}
+							color="ochre"
+							focused
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
+						/>
+						<TextField
+							id="outlined-multiline-flexible"
+							label="Column"
+							value={settings.matrix}
+							maxRows={10}
+							color="ochre"
+							focused
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
+						/>
+						<TextField
+							id="outlined-multiline-flexible"
+							label="Sequence maximum size"
+							value={settings.matrix}
+							maxRows={10}
+							color="ochre"
+							focused
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
+						/>
+						<div className="flex items-center w-full">
+							<Button
+								variant="contained"
+								type="submit"
+								className="bg-yellow-400 text-black hover:bg-yellow-400 hover:text-black"
+								sx={{
+									gridColumn: 'span 2',
+									height: 'fit-content',
+								}}
+								disabled={
+									settings.matrix === '' || settings.sequence.length === 0
+								}
+							>
+								Generated input
+							</Button>
+						</div>
+					</section>
+				</form>
+				<Divider
+					textAlign="left"
+					sx={{marginY: 5, width: '90%', marginX: 'auto'}}
+				>
+					OR
+				</Divider>
+				<h3 className="manualinput text-xl px-20 mb-5">Manual Input</h3>
 				<div className="grid grid-cols-2 px-20 gap-10">
 					<section className="grid grid-cols-1 gap-10">
 						<Autocomplete
 							disablePortal
 							id="combo-box-demo"
 							color="ochre"
-							value={settings.buffer}
+							value={settings.buffer.toString()}
 							options={bufferOptions}
 							sx={{width: '100%'}}
 							onChange={(e) => {
@@ -99,12 +248,17 @@ const Form = () => {
 							maxRows={10}
 							color="ochre"
 							focused
-							onChange={onMatrixChange}
+							onChange={(e) =>
+								setSettings({...settings, matrix: e.target.value})
+							}
 						/>
 						<Button
 							variant="contained"
 							type="submit"
 							className="bg-yellow-400 text-black hover:bg-yellow-400 hover:text-black"
+							disabled={
+								settings.matrix === '' || settings.sequence.length === 0
+							}
 						>
 							Solve
 						</Button>

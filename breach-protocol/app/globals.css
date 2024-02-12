@@ -7,7 +7,22 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 }
-
+::-webkit-scrollbar {
+	width: 5px;
+}
+*::-webkit-scrollbar-track {
+	background: var(--primary);
+	box-shadow: 5px #ffffff;
+}
+::-webkit-scrollbar-thumb {
+	background: linear-gradient(#ffffff, var(--secondary));
+	border-radius: 6px;
+	box-shadow: 0px 6px 11px 0px var(--secondary);
+	box-shadow: inset 0px 6px 11px 0px var(--secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+	blur: 8px;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
