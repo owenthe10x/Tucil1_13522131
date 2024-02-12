@@ -9,15 +9,17 @@ Program ini adalah implementasi algoritma brute force yang terinspirasi dari Bre
 
 ## Cara Menjalankan Program
 
-First, run the development server:
+1. Pindah ke folder src/breach-protocol
+2. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+npm i
 ```
+3. Jalankan server
+```bash
+npm run dev
+```
+4. Buka development server di http://localhost:3000
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
