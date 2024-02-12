@@ -35,16 +35,29 @@ const Result = ({matrix, result, onClose}) => {
 								<div key={i} className={`grid grid-flow-col `}>
 									{row.map((col, j) => (
 										/* result.solution[0].solution */
-										<p
+										<div
 											key={j}
-											className={`w-10 h-10 flex justify-center items-center ${
+											className={`relative w-10 h-10 flex justify-center items-center ${
 												isOneOfTheSolutions(j, i, result.solution[0].solution)
 													? ' border-2 border-yellow-400 '
 													: ''
 											}`}
 										>
-											{col}
-										</p>
+											{isOneOfTheSolutions(
+												j,
+												i,
+												result.solution[0].solution
+											) ? (
+												<p className="absolute -top-2 -right-2 text-black bg-yellow-400 rounded-full w-4 h-4 flex items-center justify-center aspect-square">
+													{result.solution[0].solution.findIndex((obj) => {
+														return obj.x === j && obj.y === i
+													}) + 1}
+												</p>
+											) : (
+												<></>
+											)}
+											<p>{col}</p>
+										</div>
 									))}
 								</div>
 							))}

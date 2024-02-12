@@ -10,6 +10,7 @@ import {processInput} from '../lib/processors'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import {styled} from '@mui/material/styles'
 import {processFile} from '../lib/processors'
+import {generateInput} from '@/lib/utilities'
 const nullSettings = {
 	matrix: '',
 	sequence: [{token: '', reward: 0}],
@@ -29,6 +30,7 @@ const nullGenerateSettings = {
 	buffer: 0,
 	matrixSizer: {row: 0, column: 0},
 	token: '',
+	totalSequence: 0,
 	sequenceMax: 0,
 }
 const nullResult = {totalReward: 0, buffer: 0, coordinate: [], time: 0}
@@ -105,120 +107,145 @@ const Form = ({onResultFound}) => {
 			console.log(text)
 		}
 		reader.readAsText(e.target.files[0])
+		document.getElementById('manualinput').scrollIntoView({behavior: 'smooth'})
 	}
 
 	const generateHandler = (e) => {
 		e.preventDefault()
-		
+		const settings = generateInput(generateSettings)
+		console.log('settings asu', settings)
+		setSettings(settings)
+		document.getElementById('manualinput').scrollIntoView({behavior: 'smooth'})
 	}
 	return (
 		<ThemeProvider theme={theme}>
-			<form onSubmit={submitHandler}>
-				<div className="px-20 ">
-					<h3 className="text-xl mb-5">File Input</h3>
-					<Button
+			<div className="px-20 ">
+				<h3 className="text-xl mb-5">File Input</h3>
+				<Button
+					color="ochre"
+					component="label"
+					variant="contained"
+					startIcon={<CloudUploadIcon />}
+					href="#manualinput"
+				>
+					Upload file
+					<VisuallyHiddenInput type="file" onChange={(e) => onFileChange(e)} />
+				</Button>
+			</div>
+			<Divider
+				textAlign="left"
+				sx={{marginY: 5, width: '90%', marginX: 'auto'}}
+			>
+				OR
+			</Divider>
+			<form className="px-20" onSubmit={generateHandler}>
+				<h3 className="text-xl ">Generated Input</h3>
+				<section className="grid grid-cols-8 gap-5 py-5">
+					<TextField
+						label="Token"
+						value={generateSettings.token}
 						color="ochre"
-						component="label"
-						variant="contained"
-						startIcon={<CloudUploadIcon />}
-						href="#manualinput"
-					>
-						Upload file
-						<VisuallyHiddenInput
-							type="file"
-							onChange={(e) => onFileChange(e)}
-						/>
-					</Button>
-				</div>
-				<Divider
-					textAlign="left"
-					sx={{marginY: 5, width: '90%', marginX: 'auto'}}
-				>
-					OR
-				</Divider>
-				<form className="px-20" onSubmit={generateHandler}>
-					<h3 className="manualinput text-xl ">Generated Input</h3>
-					<section className="grid grid-cols-7 gap-5 py-5">
-						<TextField
-							id="outlined-multiline-flexible"
-							label="Token"
-							value={settings.matrix}
-							maxRows={10}
-							color="ochre"
-							focused
-							onChange={(e) =>
-								setSettings({...settings, matrix: e.target.value})
+						focused
+						onChange={(e) =>
+							setGenerateSettings({...generateSettings, token: e.target.value})
+						}
+						placeholder="BD E9 1C 7A"
+					/>
+					<TextField
+						label="Buffer size"
+						value={generateSettings.buffer}
+						color="ochre"
+						focused
+						onChange={(e) =>
+							setGenerateSettings({...generateSettings, buffer: e.target.value})
+						}
+					/>
+					<TextField
+						label="Row"
+						value={generateSettings.matrixSizer.row}
+						color="ochre"
+						focused
+						onChange={(e) =>
+							setGenerateSettings({
+								...generateSettings,
+								matrixSizer: {
+									...generateSettings.matrixSizer,
+									row: Number(e.target.value),
+								},
+							})
+						}
+					/>
+					<TextField
+						label="Column"
+						value={generateSettings.matrixSizer.column}
+						color="ochre"
+						focused
+						onChange={(e) =>
+							setGenerateSettings({
+								...generateSettings,
+								matrixSizer: {
+									...generateSettings.matrixSizer,
+									column: Number(e.target.value),
+								},
+							})
+						}
+					/>
+					<TextField
+						label="Max seq size"
+						value={generateSettings.sequenceMax}
+						color="ochre"
+						focused
+						onChange={(e) =>
+							setGenerateSettings({
+								...generateSettings,
+								sequenceMax: e.target.value,
+							})
+						}
+					/>
+					<TextField
+						label="Total sequence"
+						value={generateSettings.totalSequence}
+						color="ochre"
+						focused
+						onChange={(e) =>
+							setGenerateSettings({
+								...generateSettings,
+								totalSequence: e.target.value,
+							})
+						}
+					/>
+
+					<div className="flex items-center col-span-2">
+						<Button
+							variant="contained"
+							type="submit"
+							className="bg-yellow-400 text-black hover:bg-yellow-400 hover:text-black"
+							sx={{
+								gridColumn: 'span 2',
+								height: 'fit-content',
+							}}
+							disabled={
+								generateSettings.buffer === 0 ||
+								generateSettings.matrixSizer.row === 0 ||
+								generateSettings.matrixSizer.column === 0 ||
+								generateSettings.sequenceMax === 0
 							}
-						/>
-						<TextField
-							id="outlined-multiline-flexible"
-							label="Buffer size"
-							value={settings.matrix}
-							maxRows={10}
-							color="ochre"
-							focused
-							onChange={(e) =>
-								setSettings({...settings, matrix: e.target.value})
-							}
-						/>
-						<TextField
-							id="outlined-multiline-flexible"
-							label="Row"
-							value={settings.matrix}
-							maxRows={10}
-							color="ochre"
-							focused
-							onChange={(e) =>
-								setSettings({...settings, matrix: e.target.value})
-							}
-						/>
-						<TextField
-							id="outlined-multiline-flexible"
-							label="Column"
-							value={settings.matrix}
-							maxRows={10}
-							color="ochre"
-							focused
-							onChange={(e) =>
-								setSettings({...settings, matrix: e.target.value})
-							}
-						/>
-						<TextField
-							id="outlined-multiline-flexible"
-							label="Sequence maximum size"
-							value={settings.matrix}
-							maxRows={10}
-							color="ochre"
-							focused
-							onChange={(e) =>
-								setSettings({...settings, matrix: e.target.value})
-							}
-						/>
-						<div className="flex items-center w-full">
-							<Button
-								variant="contained"
-								type="submit"
-								className="bg-yellow-400 text-black hover:bg-yellow-400 hover:text-black"
-								sx={{
-									gridColumn: 'span 2',
-									height: 'fit-content',
-								}}
-								disabled={
-									settings.matrix === '' || settings.sequence.length === 0
-								}
-							>
-								Generated input
-							</Button>
-						</div>
-					</section>
-				</form>
-				<Divider
-					textAlign="left"
-					sx={{marginY: 5, width: '90%', marginX: 'auto'}}
-				>
-					OR
-				</Divider>
-				<h3 className="manualinput text-xl px-20 mb-5">Manual Input</h3>
+						>
+							Generate
+						</Button>
+					</div>
+				</section>
+			</form>
+			<Divider
+				textAlign="left"
+				sx={{marginY: 5, width: '90%', marginX: 'auto'}}
+			>
+				OR
+			</Divider>
+			<form onSubmit={submitHandler}>
+				<h3 id="manualinput" className="manualinput text-xl px-20 mb-5">
+					Manual Input
+				</h3>
 				<div className="grid grid-cols-2 px-20 gap-10">
 					<section className="grid grid-cols-1 gap-10">
 						<Autocomplete
@@ -248,6 +275,7 @@ const Form = ({onResultFound}) => {
 							maxRows={10}
 							color="ochre"
 							focused
+							placeholder={`7A 55 E9 E9 1C 55\n55 7A 1C 7A E9 55\n55 1C 1C 55 E9 BD\nBD 1C 7A 1C 55 BD\nBD 55 BD 7A 1C 1C\n1C 55 55 7A 55 7A`}
 							onChange={(e) =>
 								setSettings({...settings, matrix: e.target.value})
 							}
