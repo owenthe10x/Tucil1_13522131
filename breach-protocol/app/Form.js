@@ -3,7 +3,7 @@ import {useState} from 'react'
 import TextField from '@mui/material/TextField'
 import {createTheme, Divider, ThemeProvider} from '@mui/material'
 import Button from '@mui/material/Button'
-import runSolver, {brute} from '../lib/algorithm'
+import findSolution from '../lib/algorithm'
 import Autocomplete from '@mui/material/Autocomplete'
 import {bufferOptions} from '../lib/constants'
 import {processInput} from '../lib/processors'
@@ -56,7 +56,7 @@ const Form = ({onResultFound}) => {
 			sequenceToken
 		)
 		const start = new Date().getTime()
-		let result = runSolver(
+		let result = findSolution(
 			processedMatrix,
 			processedSequence,
 			settings.buffer,
@@ -157,7 +157,10 @@ const Form = ({onResultFound}) => {
 						color="ochre"
 						focused
 						onChange={(e) =>
-							setGenerateSettings({...generateSettings, buffer: e.target.value})
+							setGenerateSettings({
+								...generateSettings,
+								buffer: Number(e.target.value),
+							})
 						}
 					/>
 					<TextField
@@ -198,7 +201,7 @@ const Form = ({onResultFound}) => {
 						onChange={(e) =>
 							setGenerateSettings({
 								...generateSettings,
-								sequenceMax: e.target.value,
+								sequenceMax: Number(e.target.value),
 							})
 						}
 					/>
@@ -210,7 +213,7 @@ const Form = ({onResultFound}) => {
 						onChange={(e) =>
 							setGenerateSettings({
 								...generateSettings,
-								totalSequence: e.target.value,
+								totalSequence: Number(e.target.value),
 							})
 						}
 					/>
@@ -248,24 +251,14 @@ const Form = ({onResultFound}) => {
 				</h3>
 				<div className="grid grid-cols-2 px-20 gap-10">
 					<section className="grid grid-cols-1 gap-10">
-						<Autocomplete
-							disablePortal
-							id="combo-box-demo"
+						<TextField
+							label="Buffer size"
+							value={settings.buffer}
 							color="ochre"
-							value={settings.buffer.toString()}
-							options={bufferOptions}
-							sx={{width: '100%'}}
-							onChange={(e) => {
+							focused
+							onChange={(e) =>
 								setSettings({...settings, buffer: Number(e.target.value)})
-							}}
-							renderInput={(params) => (
-								<TextField
-									{...params}
-									label="Buffer size"
-									color="ochre"
-									focused
-								/>
-							)}
+							}
 						/>
 						<TextField
 							id="outlined-multiline-flexible"

@@ -1,18 +1,22 @@
-// sequences adalah array of sequence
-// targetSequence adalah sequence yang ingin dicari
-export const containsSequence = (sequences, targetSequence) =>
-	sequences.some((sequence) => {
-		if (sequence.length !== targetSequence.length) {
-			return false
-		}
-		for (let i = 0; i < sequence.length; i++) {
-			if (sequence[i] !== targetSequence[i]) {
-				return false
-			}
-		}
-
-		return true
-	})
+export const resultToTxt = (result, matrix) => {
+	console.log('result', result)
+	const {solution, time} = result
+	let resultText = ''
+	resultText = resultText.concat(solution[0].totalReward)
+	resultText = resultText.concat('\n')
+	resultText = resultText.concat(
+		constructSolutionText(solution[0].solution, matrix)
+	)
+	resultText = resultText.concat('\n')
+	resultText = resultText.concat(
+		solution[0].solution.map((sol) => `${sol.x},${sol.y}`).join('\n')
+	)
+	resultText = resultText.concat('\n\n')
+	resultText = resultText.concat(time)
+	resultText = resultText.concat('ms\n')
+	console.log('resultText', resultText)
+	return resultText
+}
 
 export const constructSolutionText = (solution, matrix) => {
 	const solutionText = solution.map((s) => matrix[s.y][s.x]).join(' ')

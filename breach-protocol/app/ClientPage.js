@@ -3,6 +3,8 @@ import {useState} from 'react'
 import Form from './Form'
 import {processOutput} from '@/lib/processors'
 import Result from './Result'
+import {createTheme, ThemeProvider} from '@mui/material'
+
 const ClientPage = () => {
 	const [result, setResult] = useState()
 	const [resultModal, setResultModal] = useState(false)
@@ -20,8 +22,19 @@ const ClientPage = () => {
 		document.body.style.overflow = 'unset'
 		setResultModal(false)
 	}
+	const theme = createTheme({
+		palette: {
+			mode: 'dark',
+			ochre: {
+				main: '#E3D026',
+				light: '#E9DB5D',
+				dark: '#A29415',
+				contrastText: '#242105',
+			},
+		},
+	})
 	return (
-		<>
+		<ThemeProvider theme={theme}>
 			<Form onResultFound={resultHandler} />
 
 			{onLoading && (
@@ -32,7 +45,7 @@ const ClientPage = () => {
 			{resultModal && (
 				<Result matrix={matrix} result={result} onClose={closeResult} />
 			)}
-		</>
+		</ThemeProvider>
 	)
 }
 

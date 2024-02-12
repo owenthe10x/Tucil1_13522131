@@ -1,6 +1,18 @@
 import optimizeSequences from './processors'
-import {getRootsAllValues} from './tree'
 import {constructSolutionText} from './utilities'
+
+export function BFS(roots, visitor, beforeVisit) {
+	const seenNodes = []
+	let queue = [...roots.map((n) => ({...n, depth: 1}))]
+	while (queue.length > 0) {
+		const node = queue.shift()
+		seenNodes.push(node)
+		queue = queue.concat(
+			node.children.map((child) => ({...child, depth: node.depth + 1}))
+		)
+	}
+	return seenNodes
+}
 
 export function removeDuplicates(arr) {
 	const keys = new Set()
@@ -20,52 +32,45 @@ export function removeDuplicates(arr) {
 	})
 }
 
-export default function runSolver(matrix, sequences, bufferSize, rawSequence) {
-	// optimizesquence mengembalikan semua kombinasi sequence yang mungkin menjadi jawaban akhir
+export default function findSolution(
+	matrix,
+	sequences,
+	bufferSize,
+	rawSequence
+) {
+	// optimizesquence mengembalikan semua kombinasi sequence yang mungkin menjadi solusi akhir
 	const roots = optimizeSequences(sequences)
+	const rootsValues = BFS(roots).map((node) => node.value)
+
 	// ini menambah sequence secara individu karna optimizer hanya return kombinasinya saja
 	const values = [
-		// add original sequences individually since sequence optimizer
-		// only returns combinations
 		...sequences.map((sequence) => ({
 			result: sequence,
 			includes: [sequence],
 		})),
-		// roots adalah semua kombinasi sequence yang mungkin jadi jawaban akhir
-		...getRootsAllValues(roots),
+		...rootsValues,
 	]
 	const seqsThatFitInBuffer = values.filter(
 		(r) => r.result.length <= bufferSize
 	)
-	const dedupedSeqs = removeDuplicates(seqsThatFitInBuffer)
-	return runSolverUnprioritized(matrix, bufferSize, dedupedSeqs, rawSequence)
-}
-
-function runSolverUnprioritized(
-	matrix,
-	bufferSize,
-	optimalSequences,
-	rawSequence
-) {
-	const solutionsByDistance = optimalSequences
+	const uniqueSequences = removeDuplicates(seqsThatFitInBuffer)
+	const solutionsByDistance = uniqueSequences
 		.flatMap((match) => {
 			const pattern = match.result
-			const solutions = brute(pattern, matrix, true)
+			const solutions = findSolutions(pattern, matrix, true)
 			return solutions.map((solution) => ({match, solution}))
 		})
-		// it's possible that a sequence was found which includes skips
-		// filter out solutions that are longer than the buffer size!
 		.filter((seq) => seq.solution.length <= bufferSize)
 		.map((s) => ({
 			...s,
-			routeWeight: calculateRouteWeight(s.solution, rawSequence, matrix),
+			totalReward: calculateTotalReward(s.solution, rawSequence, matrix),
 		}))
-		.sort((routeWeight) => routeWeight.reward)
+		.sort((totalReward) => totalReward.reward)
 		.reverse()
 	return {solution: solutionsByDistance}
 }
 
-function calculateRouteWeight(route, rawSequence, rawMatrix) {
+function calculateTotalReward(route, rawSequence, rawMatrix) {
 	const solutionText = constructSolutionText(route, rawMatrix)
 	let totalReward = 0
 	for (let i = 0; i < rawSequence.length; i++) {
@@ -84,7 +89,7 @@ function calculateRouteWeight(route, rawSequence, rawMatrix) {
 	return totalReward
 }
 
-export const brute = (pattern, matrix, findAll) => {
+export const findSolutions = (pattern, matrix, findAll) => {
 	const yLen = matrix.length
 	const xLen = matrix[0].length
 
@@ -108,11 +113,9 @@ export const brute = (pattern, matrix, findAll) => {
 		const {patternPtr, used, stepsSoFar, allowedDir} = searchPoint
 
 		if (patternPtr === pattern.length) {
-			// found a solution!
 			if (!findAll) {
 				return [stepsSoFar]
 			}
-			// continue searching
 			solutions.push(stepsSoFar)
 		}
 
@@ -126,8 +129,9 @@ export const brute = (pattern, matrix, findAll) => {
 					x,
 					y,
 				})
-			} else if (isInitial) {
-				// allow one wasted step if it's the first row
+			}
+			// baris pertama bukan? kalo iya maka di toleransi walaupun ga sesuai sequence
+			else if (isInitial) {
 				queue.push({
 					patternPtr: patternPtr,
 					used: markUsed(used, x, y),
@@ -138,7 +142,6 @@ export const brute = (pattern, matrix, findAll) => {
 				})
 			}
 		}
-		// status iterasi pertama atau bukan
 		isInitial = false
 	}
 	return solutions
@@ -146,7 +149,6 @@ export const brute = (pattern, matrix, findAll) => {
 
 function* walkAllowedDir(searchPoint, yLen, xLen) {
 	const {used, allowedDir} = searchPoint
-
 	if (allowedDir === 'vertical') {
 		const {x} = searchPoint
 		for (let y = 0; y < yLen; y++) {

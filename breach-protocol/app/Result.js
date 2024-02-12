@@ -1,12 +1,28 @@
 'use client'
 import {constructSolutionText, isOneOfTheSolutions} from '@/lib/utilities'
-
+import CloseIcon from '@mui/icons-material/Close'
+import {Button, IconButton} from '@mui/material'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import {resultToTxt} from '@/lib/utilities'
 const Result = ({matrix, result, onClose}) => {
+	const downloadHandler = () => {
+		const element = document.createElement('a')
+		const content = resultToTxt(result, matrix)
+		const file = new Blob([content], {
+			type: 'text/plain',
+		})
+		element.href = URL.createObjectURL(file)
+		element.download = 'result.txt'
+		document.body.appendChild(element) // Required for this to work in FireFox
+		element.click()
+	}
 	return (
-		<div
-			className="w-full h-full fixed bottom-0 left-0 bg-black bg-opacity-70 z-50 flex justify-center items-center"
-			onClick={onClose}
-		>
+		<div className="w-full h-full fixed bottom-0 left-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+			<div className="absolute top-20 right-20">
+				<IconButton aria-label="delete " onClick={onClose}>
+					<CloseIcon color="warning" />
+				</IconButton>
+			</div>
 			<div className="flex flex-col items-center">
 				<div className="text-xl">
 					<p>
@@ -24,7 +40,7 @@ const Result = ({matrix, result, onClose}) => {
 					<p>
 						Reward:{' '}
 						{result.solution.length > 0
-							? result.solution[0].routeWeight
+							? result.solution[0].totalReward
 							: 'Not found.'}
 					</p>
 				</div>
@@ -67,7 +83,14 @@ const Result = ({matrix, result, onClose}) => {
 				) : (
 					<h3 className="py-40">Solution not found.</h3>
 				)}
-				<p className="py-10 ">Click anywhere to close.</p>
+				<Button
+					variant="outlined"
+					color="ochre"
+					endIcon={<FileDownloadIcon />}
+					onClick={downloadHandler}
+				>
+					Download result
+				</Button>
 			</div>
 		</div>
 	)
