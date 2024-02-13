@@ -17,34 +17,32 @@ const Result = ({matrix, result, onClose}) => {
 		element.click()
 	}
 	return (
-		<div className="w-full h-full fixed bottom-0 left-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+		<div className="w-full h-full fixed bottom-0 left-0 bg-black bg-opacity-70 z-50 flex justify-center items-center overflow-y-scroll py-20">
 			<div className="absolute top-20 right-20">
 				<IconButton aria-label="delete " onClick={onClose}>
 					<CloseIcon color="warning" />
 				</IconButton>
 			</div>
-			<div className="flex flex-col items-center">
+			<div className="flex flex-col items-center absolute top-32 pb-20">
 				<div className="text-xl">
 					<p>
 						Sequence Text:{' '}
-						{result.solution.length > 0
+						{result.solution
 							? constructSolutionText(result.solution[0].solution, matrix)
 							: 'Not found.'}
 					</p>
 					<p>
 						Sequence Index:{' '}
-						{result.solution.length > 0
+						{result.solution
 							? result.solution[0].solution.map((sol) => `{${sol.x},${sol.y}}`)
 							: 'Not found.'}
 					</p>
 					<p>
 						Reward:{' '}
-						{result.solution.length > 0
-							? result.solution[0].totalReward
-							: 'Not found.'}
+						{result.solution ? result.solution[0].totalReward : 'Not found.'}
 					</p>
 				</div>
-				{result.solution.length > 0 ? (
+				{result.solution ? (
 					<>
 						<div className={`grid grid-flow-row  w-fit h-fit`}>
 							{matrix.map((row, i) => (
@@ -64,7 +62,7 @@ const Result = ({matrix, result, onClose}) => {
 												i,
 												result.solution[0].solution
 											) ? (
-												<p className="absolute -top-2 -right-2 text-black bg-yellow-400 rounded-full w-4 h-4 flex items-center justify-center aspect-square">
+												<p className="absolute -top-2 -right-2 text-black bg-yellow-400 rounded-full w-4 h-4 flex items-center justify-center aspect-square z-50">
 													{result.solution[0].solution.findIndex((obj) => {
 														return obj.x === j && obj.y === i
 													}) + 1}
